@@ -7,7 +7,7 @@
         <div>
             <h2>Name: <span id="show_name"></span></h2>
             <div id="user_credentials">
-                <input type="text" id="name" size="40" placeholder="Type your name"/>
+                <input type="text" id="input_name" size="40" placeholder="Type your name"/>
                 <button id="name_btn" onclick="hide_credentials()">send</button>
             </div>
             <div id="chat_div">
@@ -27,27 +27,31 @@
         var client_id = Date.now()
         let chat_area = document.getElementById("chat_div")
         let credentials_area = document.getElementById("user_credentials")
+        var username_input = document.getElementById("input_name")
+        var message = document.getElementById("message")
+        username_input.focus()
         chat_area.style.display = 'none'
 
         function hide_credentials(){
-            let username_input = document.getElementById("name")
-
+            
             if(username_input.value != ""){
                 chat_area.style.display = 'inline-block'
                 credentials_area.style.display = 'none'
                 client_id = username_input.value.replace(" ", "_")+"_"+client_id
                 document.getElementById("show_name").textContent = client_id  
-            }
-            
+                message.focus()
+                connect_and_listen(client_id);
+            } 
+
         }
-        
-        ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
-        ws.onmessage = function(event) {
-            console.log("aqui "+event.data)
-            let message = document.getElementById("message")
-            let chat = document.getElementById("chat_area")
-            chat.value = chat.value+"\n"+event.data
-        };
+
+        function connect_and_listen(client_id) {
+            ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            ws.onmessage = function(event) {
+                let chat = document.getElementById("chat_area")
+                chat.value = chat.value+"\n"+event.data
+            };
+        }
 
         function add_message(event){
             let message = document.getElementById("message")
@@ -55,7 +59,6 @@
             //chat.value = "\n"+chat.value
             ws.send(message.value)
             message.value = ''
-            //event.preventDefault()
         }
 
         document.getElementById("message").addEventListener("keyup", function (event) {
@@ -64,7 +67,13 @@
             document.getElementById("send_btn").click();
             // Trigger button click
         }
-        });
-
+        }); 
+        document.getElementById("input_name").addEventListener("keyup", function (event) {
+            if (event.key === 'Enter') {
+                // Check if Enter key is pressed
+                document.getElementById("name_btn").click();
+                // Trigger button click
+            }
+            }); 
     </script>
 </html>
